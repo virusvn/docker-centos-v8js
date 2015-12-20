@@ -36,4 +36,5 @@ RUN cp /usr/src/v8/out/native/obj.target/tools/gyp/libv8_libplatform.a /lib64/
 
 # Install v8js
 RUN yum -y --enablerepo=webtatic install php70w-pear
+RUN yum -y --enablerepo=webtatic install php70w-devel
 RUN pecl install v8js-1.0.0
