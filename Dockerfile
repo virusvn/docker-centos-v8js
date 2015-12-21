@@ -29,12 +29,23 @@ env PATH /usr/src/depot_tools:$PATH
 
 # Install v8
 RUN cd /usr/src && fetch v8
-RUN cd /usr/src/v8 && make native library=shared
+RUN cd /usr/src/v8 && make native library=shared snapshot=off -j 4
 
 RUN cp -R /usr/src/v8/out/native/lib.target/lib* /lib64/
-RUN cp /usr/src/v8/out/native/obj.target/tools/gyp/libv8_libplatform.a /lib64/
+RUN cp /usr/src/v8/out/native/obj.target/tools/gyp/libv8_libplatform.a /usr/lib64/
+RUN cp -R /usr/src/v8/include /usr/local
 
 # Install v8js
 RUN yum -y --enablerepo=webtatic install php70w-pear
 RUN yum -y --enablerepo=webtatic install php70w-devel
-RUN pecl install v8js-1.0.0
+RUN echo "/usr/lib64" | pecl install v8js-1.0.0 
+
+ENV NO_INTERACTION 1
+RUN echo extension=v8js.so > /etc/php.d/v8js.ini
+RUN php -m | grep v8
+
+# Check V8Js class
+RUN php -r 'var_dump(get_declared_classes());' | grep V8
+RUN php -r '$class = new ReflectionClass("V8Js"); var_dump($class->getMethods());'
+# Excute test v8js
+RUN php -r '$v8 = new V8Js(); var_dump($v8->executeString("1+2+3"));'
