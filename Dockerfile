@@ -10,7 +10,7 @@ RUN rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.
 RUN yum -y install gcc-c++ pcre-devel zlib-devel make unzip 
 RUN rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
 # Install PHP 7
-RUN yum -y install --enablerepo=webtatic php70w php70w-common php70w-fpm php70w-cli php70w-opcache php70w-pear php70-devel php70w-intl php70w-mbstring php70w-mcrypt
+RUN yum -y install --enablerepo=webtatic php70w php70w-common php70w-fpm php70w-cli php70w-opcache php70w-pear php70w-devel php70w-intl php70w-mbstring php70w-mcrypt
 # Install Git latest  
 RUN yum -y install curl-devel expat-devel gettext-devel openssl openssl-devel zlib-devel bzip2
 RUN yum -y install gcc perl-ExtUtils-MakeMaker
