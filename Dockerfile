@@ -1,19 +1,20 @@
-FROM centos:7
+FROM centos:6
 MAINTAINER Nhan Nguyen <nxtnhan@gmail.com>
 RUN yum -y update
-# Install Nginx Latest
-ADD nginx.repo /etc/yum.repos.d/nginx.repo
-RUN yum -y install nginx
 
-RUN rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+RUN rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
 # Install build tools
 RUN yum -y install gcc-c++ pcre-devel zlib-devel make unzip 
-RUN rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+RUN rpm -Uvh https://mirror.webtatic.com/yum/el6/latest.rpm
 # Install PHP 7
 RUN yum -y install --enablerepo=webtatic php70w php70w-common php70w-fpm php70w-cli php70w-opcache php70w-pear php70w-devel php70w-intl php70w-mbstring php70w-mcrypt
 # Install Git latest  
 RUN yum -y install curl-devel expat-devel gettext-devel openssl openssl-devel zlib-devel bzip2
-RUN yum -y install gcc perl-ExtUtils-MakeMaker
+
+
+# V8 required Git >=2.2.5, but current version is only 1.7.1, so we need to build Git latest version
+RUN yum -y install gcc perl-ExtUtils-MakeMaker git tar wget
+RUN git --version
 
 RUN cd /usr/src && \
     git clone https://github.com/git/git
@@ -22,6 +23,15 @@ RUN yum -y remove git
 
 # Use new Git
 env PATH /usr/local/git/bin:$PATH
+RUN git --version
+
+# Install Python 2.7
+
+RUN cd /usr/src && wget --no-check-certificate https://www.python.org/ftp/python/2.7.6/Python-2.7.6.tgz
+RUN cd /usr/src && tar xf Python-2.7.6.tgz
+RUN cd /usr/src/Python-2.7.6 && ./configure --prefix=/usr/local
+RUN cd /usr/src/Python-2.7.6 && make && make altinstall
+RUN ln -s /usr/local/bin/python2.7 /usr/local/bin/python
 
 # Install Depot Tools
 RUN cd /usr/src && git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
@@ -46,9 +56,14 @@ RUN php -m | grep v8
 # Check V8Js class
 RUN php -r 'var_dump(get_declared_classes());' | grep V8
 RUN php -r '$class = new ReflectionClass("V8Js"); var_dump($class->getMethods());'
+
 # Excute test v8js
 RUN php -r '$v8 = new V8Js(); var_dump($v8->executeString("1+2+3"));'
 
+
+# Install Nginx Latest
+ADD nginx.repo /etc/yum.repos.d/nginx.repo
+RUN yum -y install nginx
 
 # Config server
 ADD nginx.conf /etc/nginx/nginx.conf
