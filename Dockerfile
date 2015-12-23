@@ -37,6 +37,10 @@ RUN ln -s /usr/local/bin/python2.7 /usr/local/bin/python
 RUN cd /usr/src && git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 env PATH /usr/src/depot_tools:$PATH
 
+
+# Fetch v8
+RUN cd /usr/src && fetch v8
+
 # Upgrade GCC to 4.8.5
 RUN yum install -y texinfo-tex flex zip libgcc.i686 glibc-devel.i686
 RUN cd /usr/src && wget ftp://ftp.gnu.org/gnu/gcc/gcc-4.8.5/gcc-4.8.5.tar.gz
@@ -48,10 +52,10 @@ RUN cd gcc-build-4.8.5
 RUN ../configure --prefix = / usr
 RUN make && make install
 
-# Install v8
-RUN cd /usr/src && fetch v8
+# Build V8
 RUN cd /usr/src/v8 && make native library=shared snapshot=off -j 4
 
+# Copy to lib directory
 RUN cp -R /usr/src/v8/out/native/lib.target/lib* /lib64/
 #RUN cp /usr/src/v8/out/native/obj.target/tools/gyp/libv8_libplatform.a /usr/lib64/
 RUN echo -e "create /usr/lib/libv8_libplatform.a\naddlib  /usr/src/v8/out/native/obj.target/tools/gyp/libv8_libplatform.a\nsave\nend" | ar -M
