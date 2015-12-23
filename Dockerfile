@@ -32,7 +32,8 @@ RUN cd /usr/src && fetch v8
 RUN cd /usr/src/v8 && make native library=shared snapshot=off -j 4
 
 RUN cp -R /usr/src/v8/out/native/lib.target/lib* /lib64/
-RUN cp /usr/src/v8/out/native/obj.target/tools/gyp/libv8_libplatform.a /usr/lib64/
+#RUN cp /usr/src/v8/out/native/obj.target/tools/gyp/libv8_libplatform.a /usr/lib64/
+RUN echo -e "create /usr/lib/libv8_libplatform.a\naddlib  /usr/src/v8/out/native/obj.target/tools/gyp/libv8_libplatform.a\nsave\nend" | ar -M
 RUN cp -R /usr/src/v8/include /usr/local
 
 # Install v8js
@@ -47,3 +48,16 @@ RUN php -r 'var_dump(get_declared_classes());' | grep V8
 RUN php -r '$class = new ReflectionClass("V8Js"); var_dump($class->getMethods());'
 # Excute test v8js
 RUN php -r '$v8 = new V8Js(); var_dump($v8->executeString("1+2+3"));'
+
+
+# Config server
+ADD nginx.conf /etc/nginx/nginx.conf
+# Start web server
+
+ADD start.sh /start.sh
+ADD index.html /index.html
+ADD test.php /test.php
+
+VOLUME ["/website_files"]
+EXPOSE 80
+CMD ["sh", "/start.sh"]
